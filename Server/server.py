@@ -36,9 +36,6 @@ while True:
     ThreadCount += 1
     print('Thread Number: ' + str(ThreadCount))
    
-    if show(key):
-        close()
-        break
 
 
     
