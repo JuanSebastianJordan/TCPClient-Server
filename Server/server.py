@@ -1,5 +1,6 @@
 ##
 #Code for the server
+import hashlib
 import socket
 import os
 from _thread import *
@@ -45,8 +46,12 @@ def threaded_client(connection):
                 connection.sendall(str.encode(File_name))
                 reply = connection.recv(1024).decode('utf-8')
 
-                if reply == AKN_NAME :
-                    pass
+                if reply == AKN_NAME:
+
+                    hash = hash_file(File)
+                    print("Server Says: Sending file hash to client " + hash)
+                    connection.sendall(str.encode(hash))
+
 
         else :
             print("Server Says: : Unable to connect to client");
@@ -64,7 +69,32 @@ def threaded_client(connection):
 
         print(reply)
         connection.sendall(str.encode(reply))
+
+
     connection.close()
+
+
+
+def hash_file(file):
+   """"This function returns the SHA-1 hash
+   of the file passed into it"""
+
+   # make a hash object
+   h = hashlib.sha1()
+
+   # open file for reading in binary mode
+
+
+   # loop till the end of the file
+   chunk = 0
+   while chunk != b'':
+       # read only 1024 bytes at a time
+       chunk = file.read(1024)
+       h.update(chunk)
+
+   # return the hex representation of digest
+   return h.hexdigest()
+
 
 def close():
     ServerSocket.close()
