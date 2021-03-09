@@ -8,6 +8,7 @@ from _thread import *
 host = '127.0.0.1'
 port = 1233
 ThreadCount = 0
+BufferSize = 1024
 
 File_path = "./data/media/"
 Log_path = "./data/logs/"
@@ -17,6 +18,7 @@ File = open(File_path + File_name, 'wb')  # open in binary
 SYN = 'Hello'
 AKN = 'Ready'
 AKN_NAME = 'Name'
+AKN_OK = 'Ok'
 
 ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -32,37 +34,34 @@ def threaded_client(connection, idThread):
     connection.send(str.encode('Welcome to the Server'))
     while True:
 
-        reply = connection.recv(1024).decode('utf-8')
+
+        reply = connection.recv(BufferSize).decode('utf-8')
         if reply == SYN:
             print("Server Says: Hail from client {} received".format(idThread))
 
             connection.sendall(str.encode(reply))
-            reply = connection.recv(1024).decode('utf-8')
+            reply = connection.recv(BufferSize).decode('utf-8')
 
             if reply == AKN:
                 print("Server Says: Sending file name ({}) to client {}".format(File_name, idThread))
                 connection.sendall(str.encode(File_name))
-                reply = connection.recv(1024).decode('utf-8')
+                reply = connection.recv(BufferSize).decode('utf-8')
 
                 if reply == AKN_NAME:
                     hash = hash_file(File)
                     print("Server Says: Sending file hash to client {}".format(hash))
                     connection.sendall(str.encode(hash))
 
+                    reply = connection.recv(BufferSize).decode('utf-8')
+                    if reply == AKN_OK:
+
+                        connection.sendall(str.encode(hash))
 
         else:
-            print("Server Says: : Unable to connect to client {}".format(idThread))
+            print("Server Says: Unable to connect to client {}".format(idThread))
             connection.close()
 
-        while True:
-            l = File.read(1024)
-            while (l):
-                connection.send(l)
-                # print('Sent ',repr(l))
-                l = File.read(1024)
-            if not l:
-                File.close()
-                break
+        send_file(connection)
 
         print(reply)
 
@@ -71,10 +70,22 @@ def threaded_client(connection, idThread):
     connection.close()
 
 
+def send_file(connection, idThread):
+    while True:
+        l = File.read(BufferSize)
+        while (l):
+            connection.send(l)
+            print("Server Says: Sent file chunk {} to  client {}".format(l, idThread))
+
+            l = File.read(BufferSize)
+        if not l:
+            File.close()
+            break
+
+
 def hash_file(file):
     """"This function returns the SHA-1 hash
     of the file passed into it"""
-
     # make a hash object
     h = hashlib.sha1()
 
@@ -84,7 +95,7 @@ def hash_file(file):
     chunk = 0
     while chunk != b'':
         # read only 1024 bytes at a time
-        chunk = file.read(1024)
+        chunk = file.read(BufferSize)
         h.update(chunk)
 
     # return the hex representation of digest
@@ -97,7 +108,7 @@ def close():
 
 while True:
     print('Listening at', ServerSocket.getsockname())
-    ThreadCount = 0
+
     Client, address = ServerSocket.accept()
 
     print('Connected to: ' + address[0] + ':' + str(address[1]))
