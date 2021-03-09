@@ -1,5 +1,5 @@
 # Code for the client
-
+##
 import socket
 
 ClientSocket = socket.socket()
@@ -14,15 +14,10 @@ except socket.error as e:
 
 Response = ClientSocket.recv(1024)
 while True:
-    Input = input('File to transfer(fileA.txt or file.B.txt)/Exit: ')
-    if Input=='Exit':
-        break
-    clients = input('How many clients?/Exit: ')
-    if clients == 'Exit':
-        break
-    
-    ClientSocket.send(str.encode(Input))
+
+    ClientSocket.send(str.encode("Hello"))
     Response = ClientSocket.recv(1024)
+
     print(Response.decode('utf-8'))
 
 ClientSocket.close()
