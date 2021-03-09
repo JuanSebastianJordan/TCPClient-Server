@@ -3,6 +3,7 @@
 import hashlib
 import socket
 import os
+import traceback
 from _thread import *
 
 host = '127.0.0.1'
@@ -19,6 +20,7 @@ SYN = 'Hello'
 AKN = 'Ready'
 AKN_NAME = 'Name'
 AKN_OK = 'Ok'
+AKN_HASH = 'HashOk'
 
 ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -34,40 +36,40 @@ def threaded_client(connection, idThread):
     connection.send(str.encode('Welcome to the Server'))
     while True:
 
-
-        reply = connection.recv(BufferSize).decode('utf-8')
-        if reply == SYN:
-            print("Server Says: Hail from client {} received".format(idThread))
-
-            connection.sendall(str.encode(reply))
+        try:
             reply = connection.recv(BufferSize).decode('utf-8')
+            if reply == SYN:
+                print("Server Says: Hail from client {} received".format(idThread))
 
-            if reply == AKN:
-                print("Server Says: Sending file name ({}) to client {}".format(File_name, idThread))
-                connection.sendall(str.encode(File_name))
+                connection.send(str.encode(SYN))
                 reply = connection.recv(BufferSize).decode('utf-8')
 
-                if reply == AKN_NAME:
-                    hash = hash_file(File)
-                    print("Server Says: Sending file hash to client {}".format(hash))
-                    connection.sendall(str.encode(hash))
-
+                if reply == AKN:
+                    print("Server Says: Sending file name ({}) to client {}".format(File_name, idThread))
+                    connection.sendall(str.encode(File_name))
                     reply = connection.recv(BufferSize).decode('utf-8')
-                    if reply == AKN_OK:
 
-                        connection.sendall(str.encode(hash))
+                    if reply == AKN_NAME:
+                        hash = hash_file(File)
+                        print("Server Says: Sending file hash to client {}".format(hash))
+                        connection.send(str.encode(hash))
 
-        else:
+                        reply = connection.recv(BufferSize).decode('utf-8')
+                        if reply == AKN_OK:
+                            send_file(connection, idThread)
+
+                            reply = connection.recv(BufferSize).decode('utf-8')
+                            if reply == AKN_HASH:
+                                print("Server Says: File successfully sent to client {}".format(hash))
+                                connection.close()
+
             print("Server Says: Unable to connect to client {}".format(idThread))
             connection.close()
 
-        send_file(connection)
-
-        print(reply)
-
-        connection.sendall(str.encode(reply))
-
-    connection.close()
+        except Exception as err:
+            connection.close()
+            print("Server Says: Error during connection with client {}".format(idThread))
+            traceback.print_tb(err.__traceback__)
 
 
 def send_file(connection, idThread):
