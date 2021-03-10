@@ -59,9 +59,6 @@ while True:
             print("Client Says: Hail back from server")
 
             ClientSocket.send(str.encode(AKN))
-
-            Response = ClientSocket.recv(BufferSize).decode('utf-8')
-
         else:
             print("Client Says: Error in protocol with server: {}".format(Response))
             ClientSocket.send(str.encode(ERROR))
@@ -70,14 +67,12 @@ while True:
 
         if Response:
 
-            print("Client Says: file name received from server")
             file_name = Response
+            print("Client Says: file name received from server: {}".format(file_name))
             ClientSocket.send(str.encode(AKN_NAME))
 
             Response = ClientSocket.recv(BufferSize).decode('utf-8')
-
             if Response:
-
                 print("Client Says: file hash received from server")
                 serverHash = Response
                 ClientSocket.send(str.encode(AKN_OK))

@@ -45,12 +45,15 @@ def threaded_client(connection, idThread):
                 reply = connection.recv(BufferSize).decode('utf-8')
 
                 if reply == AKN:
+
+
                     print("Server Says: Sending file name ({}) to client {}".format(File_name, idThread))
-                    connection.sendall(str.encode(File_name))
+                    connection.send(str.encode(File_name))
                     reply = connection.recv(BufferSize).decode('utf-8')
 
                     if reply == AKN_NAME:
-                        hash = hash_file(File)
+                        print('AKN_NAME', AKN_NAME)
+                        hash = hash_file()
                         print("Server Says: Sending file hash to client {}".format(hash))
                         connection.send(str.encode(hash))
 
@@ -88,7 +91,9 @@ def send_file(connection, idThread):
             break
 
 
-def hash_file(file):
+def hash_file():
+    file = open(File_path + File_name, 'rb')  # open in binary
+
     """"This function returns the SHA-1 hash
     of the file passed into it"""
     # make a hash object
