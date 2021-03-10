@@ -73,8 +73,8 @@ while True:
 
             Response = ClientSocket.recv(BufferSize).decode('utf-8')
             if Response:
-                print("Client Says: file hash received from server: {}".format(serverHash))
                 serverHash = Response
+                print("Client Says: file hash received from server: {}".format(serverHash))
                 ClientSocket.send(str.encode(AKN_OK))
 
 
