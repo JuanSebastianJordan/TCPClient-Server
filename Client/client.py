@@ -2,6 +2,7 @@
 ##
 import hashlib
 import socket
+import traceback
 
 ClientSocket = socket.socket()
 host = '127.0.0.1'
@@ -15,8 +16,12 @@ AKN = 'Ready'
 AKN_NAME = 'Name'
 AKN_OK = 'Ok'
 AKN_HASH = 'HashOk'
+ERROR = 'Error'
 
 print('Waiting for connection')
+
+
+
 
 
 def hash_file(file):
@@ -60,38 +65,45 @@ while True:
 
             Response = ClientSocket.recv(BufferSize).decode('utf-8')
 
+        else:
+            ClientSocket.send(str.encode(ERROR))
+
+        if Response:
+
+            print("Client Says: file name received from server")
+            file_name = Response
+            ClientSocket.send(str.encode(AKN_NAME))
+
+            Response = ClientSocket.recv(BufferSize).decode('utf-8')
+
             if Response:
 
-                print("Client Says: file name received from server")
-                file_name = Response
-                ClientSocket.send(str.encode(AKN_NAME))
-
-                Response = ClientSocket.recv(BufferSize).decode('utf-8')
-
-                if Response:
-
-                    print("Client Says: file hash received from server")
-                    serverHash = Response
-                    ClientSocket.send(str.encode(AKN_OK))
+                print("Client Says: file hash received from server")
+                serverHash = Response
+                ClientSocket.send(str.encode(AKN_OK))
 
 
-                    with open(File_path + file_name, 'wb') as f:
-                        print("Client Says: file opened")
-                        while True:
+                with open(File_path + file_name, 'wb') as f:
+                    print("Client Says: file opened")
+                    while True:
 
-                            data = ClientSocket.recv(BufferSize)
-                            print("Client Says: file chuck received from server: {}".format(data))
-                            if not data:
-                                f.close()
-                                print("Client Says: file data stream is complete")
-                                break
-                            # write data to a file
-                            f.write(data)
+                        data = ClientSocket.recv(BufferSize)
+                        print("Client Says: file chuck received from server: {}".format(data))
+                        if not data:
+                            f.close()
+                            print("Client Says: file data stream is complete")
+                            break
+                        # write data to a file
+                        f.write(data)
 
-                    if
+
+                isValid = hash_file(f) == serverHash
+
+                if isValid:
+                    ClientSocket.send(str.encode(AKN_HASH))
 
     except Exception as err:
-        connection.close()
+        ClientSocket.close()
         print("Client Says: Error during connection with server")
         traceback.print_tb(err.__traceback__)
 

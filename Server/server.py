@@ -21,6 +21,7 @@ AKN = 'Ready'
 AKN_NAME = 'Name'
 AKN_OK = 'Ok'
 AKN_HASH = 'HashOk'
+ERROR = 'Error'
 
 ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -40,6 +41,7 @@ def threaded_client(connection, idThread):
             reply = connection.recv(BufferSize).decode('utf-8')
             if reply == SYN:
                 print("Server Says: Hail from client {} received".format(idThread))
+
 
                 connection.send(str.encode(SYN))
                 reply = connection.recv(BufferSize).decode('utf-8')
@@ -62,6 +64,7 @@ def threaded_client(connection, idThread):
                             if reply == AKN_HASH:
                                 print("Server Says: File successfully sent to client {}".format(hash))
                                 connection.close()
+
 
             print("Server Says: Unable to connect to client {}".format(idThread))
             connection.close()
