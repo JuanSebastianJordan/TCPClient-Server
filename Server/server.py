@@ -14,7 +14,7 @@ BufferSize = 1024
 File_path = "data/media/"
 Log_path = "data/logs/"
 File_name = 'f.mp4'
-File = open(File_path + File_name, 'wb')  # open in binary
+ # open in binary
 
 SYN = 'Hello'
 AKN = 'Ready'
@@ -52,7 +52,6 @@ def threaded_client(connection, idThread):
                     reply = connection.recv(BufferSize).decode('utf-8')
 
                     if reply == AKN_NAME:
-                        print('AKN_NAME', AKN_NAME)
                         hash = hash_file()
                         print("Server Says: Sending file hash to client {}".format(hash))
                         connection.send(str.encode(hash))
@@ -79,16 +78,17 @@ def threaded_client(connection, idThread):
 
 
 def send_file(connection, idThread):
-    while True:
-        l = File.read(BufferSize)
-        while (l):
-            connection.send(l)
-            print("Server Says: Sent file chunk {} to  client {}".format(l, idThread))
+    with open(File_path + File_name, 'rb') as file:
+        while True:
+            l = file.read(BufferSize)
+            while (l):
+                connection.send(l)
+                print("Server Says: Sent file chunk {} to  client {}".format(l, idThread))
 
-            l = File.read(BufferSize)
-        if not l:
-            File.close()
-            break
+                l = file.read(BufferSize)
+            if not l:
+                file.close()
+                break
 
 
 def hash_file():
