@@ -53,11 +53,12 @@ def threaded_client(connection, idThread):
 
                     if reply == AKN_NAME:
                         hash = hash_file()
-                        print("Server Says: Sending file hash to client {}".format(hash))
+                        print("Server Says: Sending file hash ({}) to client {}".format(hash, idThread))
                         connection.send(str.encode(hash))
 
                         reply = connection.recv(BufferSize).decode('utf-8')
                         if reply == AKN_OK:
+                            print('sending file')
                             send_file(connection, idThread)
 
                             reply = connection.recv(BufferSize).decode('utf-8')
@@ -81,9 +82,9 @@ def send_file(connection, idThread):
     with open(File_path + File_name, 'rb') as file:
         while True:
             l = file.read(BufferSize)
-            while (l):
-                connection.send(l)
+            while l:
                 print("Server Says: Sent file chunk {} to  client {}".format(l, idThread))
+                connection.send(l)
 
                 l = file.read(BufferSize)
             if not l:
