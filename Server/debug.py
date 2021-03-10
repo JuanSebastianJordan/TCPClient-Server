@@ -40,6 +40,9 @@ while chunk != b'':
     chunk = file.read(BufferSize)
     h.update(chunk)
 
+
+print("enddd")
+
 # return the hex representation of digest
 
 

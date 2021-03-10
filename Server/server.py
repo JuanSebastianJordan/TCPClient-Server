@@ -1,6 +1,7 @@
 ##
 # Code for the server
 import hashlib
+import math
 import socket
 import os
 import traceback
@@ -21,6 +22,7 @@ AKN = 'Ready'
 AKN_NAME = 'Name'
 AKN_OK = 'Ok'
 AKN_HASH = 'HashOk'
+AKN_COMPLETE = 'SendComplete'
 ERROR = 'Error'
 
 ServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -59,6 +61,10 @@ def threaded_client(connection, idThread):
                         reply = connection.recv(BufferSize).decode('utf-8')
                         if reply == AKN_OK:
                             print('sending file')
+
+                            size = get_file_size()
+                            connection.send(str.encode(str(size)))
+                            print("Server Says: Sending file size ({}) to client {}".format(size, idThread))
                             send_file(connection, idThread)
 
                             reply = connection.recv(BufferSize).decode('utf-8')
@@ -74,23 +80,32 @@ def threaded_client(connection, idThread):
         except Exception as err:
             connection.close()
             print("Server Says: Error during connection with client {}".format(idThread))
-            traceback.print_tb(err.__traceback__)
+            traceback.print_stack(err.__traceback__)
             break
 
 
 def send_file(connection, idThread):
+
+    size = get_file_size()
+
     with open(File_path + File_name, 'rb') as file:
-        while True:
-            l = file.read(BufferSize)
-            while l:
-                print("Server Says: Sent file chunk {} to  client {}".format(l, idThread))
-                connection.send(l)
+        chunk = 0
+        for _ in range(math.ceil(size / BufferSize)):
+            # read only 1024 bytes at a time
+            chunk = file.read(BufferSize)
 
-                l = file.read(BufferSize)
-            if not l:
-                file.close()
-                break
+            print("Server Says: Sent file chunk {} to  client {}".format(chunk, idThread))
+            connection.send(chunk)
 
+
+        print("Server Says: File transmission is complete")
+        file.close()
+
+
+def get_file_size():
+    with open(File_path + File_name, 'rb') as file:
+        packed_file = file.read()
+    return int(len(packed_file))
 
 def hash_file():
     file = open(File_path + File_name, 'rb')  # open in binary
@@ -108,6 +123,7 @@ def hash_file():
         # read only 1024 bytes at a time
         chunk = file.read(BufferSize)
         h.update(chunk)
+    file.close()
 
     # return the hex representation of digest
     return h.hexdigest()
