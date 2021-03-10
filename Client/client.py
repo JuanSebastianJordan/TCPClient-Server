@@ -49,14 +49,11 @@ try:
 except socket.error as e:
     print(str(e))
 
-Response = ClientSocket.recv(BufferSize)
 while True:
 
     try:
         ClientSocket.send(str.encode(SYN))
-        Response = ClientSocket.recv(BufferSize)
-
-        file_name = ''
+        Response = ClientSocket.recv(BufferSize).decode('utf-8')
 
         if Response == SYN:
             print("Client Says: Hail back from server")
@@ -66,6 +63,7 @@ while True:
             Response = ClientSocket.recv(BufferSize).decode('utf-8')
 
         else:
+            print("Client Says: Error in protocol with server: {}".format(Response))
             ClientSocket.send(str.encode(ERROR))
 
         if Response:
@@ -101,11 +99,13 @@ while True:
 
                 if isValid:
                     ClientSocket.send(str.encode(AKN_HASH))
+                    ClientSocket.close()
 
     except Exception as err:
         ClientSocket.close()
         print("Client Says: Error during connection with server")
         traceback.print_tb(err.__traceback__)
+        break
 
     ClientSocket.close()
 

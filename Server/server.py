@@ -11,9 +11,9 @@ port = 1233
 ThreadCount = 0
 BufferSize = 1024
 
-File_path = "./data/media/"
-Log_path = "./data/logs/"
-File_name = ''
+File_path = "data/media/"
+Log_path = "data/logs/"
+File_name = 'f.mp4'
 File = open(File_path + File_name, 'wb')  # open in binary
 
 SYN = 'Hello'
@@ -34,16 +34,14 @@ ServerSocket.listen(5)
 
 
 def threaded_client(connection, idThread):
-    connection.send(str.encode('Welcome to the Server'))
     while True:
 
         try:
             reply = connection.recv(BufferSize).decode('utf-8')
             if reply == SYN:
                 print("Server Says: Hail from client {} received".format(idThread))
-
-
                 connection.send(str.encode(SYN))
+
                 reply = connection.recv(BufferSize).decode('utf-8')
 
                 if reply == AKN:
@@ -64,6 +62,7 @@ def threaded_client(connection, idThread):
                             if reply == AKN_HASH:
                                 print("Server Says: File successfully sent to client {}".format(hash))
                                 connection.close()
+                                break
 
 
             print("Server Says: Unable to connect to client {}".format(idThread))
@@ -73,6 +72,7 @@ def threaded_client(connection, idThread):
             connection.close()
             print("Server Says: Error during connection with client {}".format(idThread))
             traceback.print_tb(err.__traceback__)
+            break
 
 
 def send_file(connection, idThread):
