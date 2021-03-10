@@ -7,7 +7,7 @@ BufferSize = 1024
 
 File_path = "/data/media/"
 Log_path = "/data/logs/"
-File_name = 'f.mp4'
+File_name = 'Test.mp4'
 
 
 file = open(os.getcwd() + File_path + File_name, 'rb')  # open in binary

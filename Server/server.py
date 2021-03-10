@@ -13,7 +13,7 @@ BufferSize = 1024
 
 File_path = "data/media/"
 Log_path = "data/logs/"
-File_name = 'f.mp4'
+File_name = 'Test.mp4'
  # open in binary
 
 SYN = 'Hello'
