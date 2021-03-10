@@ -66,6 +66,8 @@ while True:
             print("Client Says: Error in protocol with server: {}".format(Response))
             ClientSocket.send(str.encode(ERROR))
 
+        Response = ClientSocket.recv(BufferSize).decode('utf-8')
+
         if Response:
 
             print("Client Says: file name received from server")
