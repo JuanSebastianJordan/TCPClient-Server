@@ -95,8 +95,8 @@ while True:
 
 
                     f.close()
-                    print("Client Says: file data stream is complete")
-                    print('askjdbjkbdkj')
+                    print("Client Says: file transmissions complete")
+
 
                 isValid = hash_file() == serverHash
                 print(isValid)
@@ -104,6 +104,7 @@ while True:
                 if isValid:
                     ClientSocket.send(str.encode(AKN_HASH))
                     ClientSocket.close()
+                    break
                 else:
                     ClientSocket.send(str.encode(ERROR))
     except Exception as err:
