@@ -13,7 +13,11 @@ BufferSize = 1024
 
 File_path = "data/media/"
 Log_path = "data/logs/"
-File_name = 'Test.mp4'
+
+file_100MB = 'Test.mp4'
+file_250MB = 'Test.mp4'
+files_names = {1: file_100MB, 2: file_250MB}
+
 # open in binary
 
 SYN = 'Hello'
@@ -44,12 +48,12 @@ def threadsafe_function(fn):
 
 class ServerProtocol:
 
-    def __init__(self, clients_number, file_number):
+    def __init__(self, clients_number, file_name):
 
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.thread_count = 0
         self.clients_number = clients_number
-        self.file_number = file_number
+        self.file_name = file_name
         self.ready_clients = 0
         self.all_ready_monitor = threading.Event()
 
@@ -79,8 +83,8 @@ class ServerProtocol:
                     print('Server Says: client {} is put in wait for the rest of clients'.format(thread_id))
                     self.all_ready_monitor.wait()
 
-                self.send_to_client(connection, File_name, "Server Says: Sending file name ({}) to client "
-                                                           "{}".format(File_name, thread_id))
+                self.send_to_client(connection, self.file_name, "Server Says: Sending file name ({}) to client "
+                                                           "{}".format(self.file_name, thread_id))
 
                 reply = self.receive_from_client(connection)
 
@@ -109,7 +113,7 @@ class ServerProtocol:
             except Exception as err:
                 connection.close()
                 print("Server Says: Error during file transmission to client {}".format(thread_id))
-                traceback.print_stack(err.exc_info)
+                traceback.print_stack(err.message)
                 break
 
     def receive_from_client(self, connection):
@@ -137,7 +141,7 @@ class ServerProtocol:
 
         size = self.get_file_size()
 
-        with open(File_path + File_name, 'rb') as file:
+        with open(File_path + self.file_name, 'rb') as file:
             for _ in range(math.ceil(size / BufferSize)):
                 # read only 1024 bytes at a time
                 chunk = file.read(BufferSize)
@@ -147,12 +151,12 @@ class ServerProtocol:
             file.close()
 
     def get_file_size(self):
-        with open(File_path + File_name, 'rb') as file:
+        with open(File_path + self.file_name, 'rb') as file:
             packed_file = file.read()
         return int(len(packed_file))
 
     def hash_file(self):
-        file = open(File_path + File_name, 'rb')  # open in binary
+        file = open(File_path + self.file_name, 'rb')  # open in binary
 
         """"This function returns the SHA-1 hash
         of the file passed into it"""
@@ -197,6 +201,16 @@ class ServerProtocol:
 
             print('Thread Number: ' + str(self.thread_count))
 
+def main():
 
-s = ServerProtocol(3, 1)
-s.run()
+    fn = int(input("Indicate file to send to clients: \nType 1 for 100 MB video \nType 2 for 250 MB video \n"))
+    file_name = files_names[fn]
+
+    nc = int(input("Indicate number of clients to send file to: \n"))
+
+    s = ServerProtocol(nc, file_name)
+    s.run()
+
+
+if __name__ == "__main__":
+    main()
