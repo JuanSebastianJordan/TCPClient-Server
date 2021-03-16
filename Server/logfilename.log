@@ -1,0 +1,36 @@
+INFO:root:2021/16/03 05:30:15
+INFO:root:File name: Test.mp4; file size: 13804696
+INFO:root:Connection set to client1 (127.0.0.1:58688)
+INFO:root:Connection set to client2 (127.0.0.1:58689)
+INFO:root:2021/16/03 05:48:25
+INFO:root:File name: Test.mp4; file size: 13804696 B
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Connections made:
+INFO:root:Connection set to client1 (127.0.0.1:59078)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Connections made:
+INFO:root:Connection set to client2 (127.0.0.1:59079)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Connections made:
+INFO:root:Connection set to client3 (127.0.0.1:59080)
+INFO:root:2021/16/03 05:52:01
+INFO:root:File name: Test.mp4; file size: 13804696 B
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Connections made:
+INFO:root:Connection set to client1 (127.0.0.1:59133)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Connections made:
+INFO:root:Connection set to client2 (127.0.0.1:59134)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Connections made:
+INFO:root:Connection set to client3 (127.0.0.1:59135)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Successful connections:
+INFO:root:Client1: yes
+INFO:root:Client2: yes
+INFO:root:Client3: yes
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Running times:
+INFO:root:Client1: 0.8100030422210693 s
+INFO:root:Client2: 0.7309963703155518 s
+INFO:root:Client3: 0.7879972457885742 s

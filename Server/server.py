@@ -1,18 +1,25 @@
 ##
 # Code for the server
 import hashlib
+import logging
 import math
 import socket
 import threading
+import numpy as np
 import traceback
 from _thread import *
+import time
+from datetime import datetime
+
+
+
 
 host = '127.0.0.1'
 port = 1233
 BufferSize = 1024
 
 File_path = "data/media/"
-Log_path = "data/logs/"
+Log_path = "data/Logs/"
 
 file_100MB = 'Test.mp4'
 file_250MB = 'Test.mp4'
@@ -55,7 +62,12 @@ class ServerProtocol:
         self.clients_number = clients_number
         self.file_name = file_name
         self.ready_clients = 0
+        self.failed_connections = 0
         self.all_ready_monitor = threading.Event()
+        self.file_size = self.get_file_size()
+        self.running_times = np.zeros(clients_number)
+        self.completed_connections = np.zeros(clients_number)
+        self.success_connections = np.zeros(clients_number)
 
         try:
             self.server_socket.bind((host, port))
@@ -64,6 +76,16 @@ class ServerProtocol:
 
         print('Waitiing for a Connection..')
         self.server_socket.listen(5)
+
+
+        # datetime object containing current date and time
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%d-%m %H:%M:%S")
+        dt_string2 = now.strftime("%Y-%d-%m")
+
+        logging.basicConfig(filename="data/Logs/{}.log".format(dt_string2), level=logging.INFO)
+        logging.info(dt_string)
+        logging.info("File name: {}; file size: {} B".format(self.file_name, self.file_size))
 
     def send_file_to_client(self, connection, thread_id):
         while True:
@@ -97,23 +119,33 @@ class ServerProtocol:
 
                 self.verify_reply(reply, AKN_OK)
 
-                size = str(self.get_file_size())
+                size = str(self.file_size)
 
                 self.send_to_client(connection, size,
                                     "Server Says: Sending file size ({}) to client {}".format(size, thread_id))
+
+                start_time = time.time()
+
                 self.send_file(connection, thread_id)
+
+                self.running_times[thread_id -1] = time.time() - start_time
 
                 reply = connection.recv(BufferSize).decode('utf-8')
                 self.verify_reply(reply, AKN_HASH)
                 print("Server Says: File integrity verified by  client {}".format(thread_id))
 
                 connection.close()
+                self.completed_connections[thread_id-1] = 1
+                self.success_connections[thread_id-1] = 1
+                self.log_info()
                 break
 
             except Exception as err:
+                self.update_failed_connections()
                 connection.close()
-                print("Server Says: Error during file transmission to client {}".format(thread_id))
-                traceback.print_stack(err.message)
+                print("Server Says: Error during file transmission to client {}: {} \n".format(thread_id, str(err)))
+                self.completed_connections[thread_id - 1] = 1
+                self.log_info()
                 break
 
     def receive_from_client(self, connection):
@@ -127,6 +159,8 @@ class ServerProtocol:
         if not expected == received:
             raise Exception("Error in protocol: expected {}; received {}".format(expected, received))
 
+
+
     @threadsafe_function
     def all_clients_ready(self, thread_id):
 
@@ -139,10 +173,8 @@ class ServerProtocol:
 
     def send_file(self, connection, thread_id):
 
-        size = self.get_file_size()
-
         with open(File_path + self.file_name, 'rb') as file:
-            for _ in range(math.ceil(size / BufferSize)):
+            for _ in range(math.ceil(self.file_size / BufferSize)):
                 # read only 1024 bytes at a time
                 chunk = file.read(BufferSize)
                 connection.send(chunk)
@@ -186,6 +218,30 @@ class ServerProtocol:
         if self.clients_number - self.ready_clients == 0:
             self.all_ready_monitor.set()
 
+    @threadsafe_function
+    def update_failed_connections(self):
+        self.failed_connections += 1
+
+    def all_completed(self):
+        return self.completed_connections.sum() == self.clients_number
+
+
+    def log_info(self):
+        if self.all_completed():
+            logging.info(
+                '_____________________________________________________________________________________________________')
+            logging.info('Successful connections:')
+            d = {1: 'yes', 2: 'no'}
+
+            for n in range(self.clients_number):
+                logging.info('Client{}: {}'.format(n + 1, d[self.success_connections[n]]))
+
+            logging.info(
+                '_____________________________________________________________________________________________________')
+            logging.info('Running times:')
+            for n in range(self.clients_number):
+                logging.info('Client{}: {} s'.format(n + 1, self.running_times[n]))
+
     def run(self):
 
         while True:
@@ -196,8 +252,14 @@ class ServerProtocol:
 
             print('Connected to: ' + address[0] + ':' + str(address[1]))
 
+            logging.info('_____________________________________________________________________________________________________')
+            logging.info('Connections made:')
+            logging.info('Connection set to client{} ({}:{})'.format(self.thread_count, address[0], str(address[1])))
+
             if self.thread_count <= self.clients_number:
                 start_new_thread(self.send_file_to_client, (Client, self.thread_count))
+
+
 
             print('Thread Number: ' + str(self.thread_count))
 
