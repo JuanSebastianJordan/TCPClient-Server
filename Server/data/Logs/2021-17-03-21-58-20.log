@@ -1,0 +1,15 @@
+INFO:root:2021-17-03 21:58:20
+INFO:root:File name: File1.mp4; file size: 258843189 B
+INFO:root:Connection set to client1 (127.0.0.1:57633)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Successful connections:
+INFO:root:Client1: yes
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Running times:
+INFO:root:Client1: 9.890004396438599 s
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Bytes sent:
+INFO:root:Client1: 258843252.0 B
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Packages sent:
+INFO:root:Client1: 252781.0

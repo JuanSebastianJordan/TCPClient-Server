@@ -1,0 +1,8 @@
+INFO:root:2021-17-03 21:02:14
+INFO:root:File name: File2.mp4; file size: 258843189 B
+INFO:root:Connection set to client1 (127.0.0.1:58522)
+INFO:root:Connection set to client2 (127.0.0.1:58523)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Successful connections:
+INFO:root:Connection set to client3 (127.0.0.1:58542)
+INFO:root:Connection set to client4 (127.0.0.1:58543)

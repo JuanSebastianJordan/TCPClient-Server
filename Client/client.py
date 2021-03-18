@@ -1,11 +1,14 @@
 # Code for the client
 ##
 import hashlib
+import logging
 import math
 import socket
-import traceback
-from _thread import start_new_thread
-from concurrent.futures import ThreadPoolExecutor
+import sys
+import threading
+import time
+from tqdm import tqdm
+from datetime import datetime
 from threading import Thread
 
 host = '127.0.0.1'
@@ -23,12 +26,40 @@ ERROR = 'Error'
 AKN_COMPLETE = 'SendComplete'
 
 
+def threadsafe_function(fn):
+    """decorator making sure that the decorated function is thread safe"""
+    lock = threading.Lock()
+
+    def new(*args, **kwargs):
+        lock.acquire()
+        try:
+            r = fn(*args, **kwargs)
+        except Exception as e:
+            raise e
+        finally:
+            lock.release()
+        return r
+
+    return new
+
+
 class ClientProtocol(Thread):
 
     def __init__(self, id, clients_number):
         Thread.__init__(self)
         self.id = id
         self.clients_number = clients_number
+        self.server_file_name = ''
+        self.client_file_name = ''
+        self.file_size = 0
+        self.running_time = 0
+        self.success_connection = True
+        self.packages_received = 0
+        self.bytes_received = 0
+        self.log_info = ''
+        self.port = ''
+        self.ip = ''
+
         print('Client thread started')
 
     def hash_file(self, file_name):
@@ -52,10 +83,15 @@ class ClientProtocol(Thread):
         return h.hexdigest()
 
     def receive_from_server(self, client_socket):
-        return client_socket.recv(BufferSize).decode('utf-8')
+        B = client_socket.recv(BufferSize)
+        b = B.decode('utf-8')
+        self.bytes_received += len(B)
+        self.packages_received += 1
+        return b
 
     def send_to_server(self, client_socket, segment, print_message):
-        client_socket.send(str.encode(segment))
+        b = client_socket.send(str.encode(segment))
+
         print(print_message)
 
     def verify_reply(self, received, expected):
@@ -74,6 +110,8 @@ class ClientProtocol(Thread):
 
         try:
             client_socket.connect((host, port))
+            self.port = client_socket.getsockname()[1]
+            self.ip = socket.gethostname()
         except socket.error as e:
             print('Client{} Says: error creating socket ', str(e))
 
@@ -88,16 +126,18 @@ class ClientProtocol(Thread):
                 print("Client{} Says: Hail back from server".format(self.id))
 
                 self.send_to_server(client_socket, AKN,
-                                    "Client{} Says: communicating to server that client is ready for file transport".format(self.id))
+                                    "Client{} Says: communicating to server that client is ready for file transport".format(
+                                        self.id))
 
                 reply = self.receive_from_server(client_socket)
 
                 self.verify_reply_not_null(reply, 'file name')
 
-                file_name = reply
+                self.server_file_name = reply
 
                 self.send_to_server(client_socket, AKN_NAME,
-                                    "Client{} Says: file name received from server: {}".format(self.id, file_name))
+                                    "Client{} Says: file name received from server: {}".format(self.id,
+                                                                                               self.server_file_name))
 
                 reply = self.receive_from_server(client_socket)
 
@@ -108,51 +148,90 @@ class ClientProtocol(Thread):
                 self.send_to_server(client_socket, AKN_OK,
                                     "Client{} Says: file hash received from server: {}".format(self.id, serverHash))
 
-                size = int(self.receive_from_server(client_socket))
-                print("Client{} Says: file size received from server: {}".format(self.id, size))
+                self.file_size = int(self.receive_from_server(client_socket))
+                print("Client{} Says: file size received from server: {}".format(self.id, self.file_size))
 
-                name = "Cliente{}-Prueba-{}-{}".format(self.id, self.clients_number, file_name)
-                with open(File_path + name
-                        , 'wb') as f:
-                    print("Client{} Says: file created")
+                self.client_file_name = "Cliente{}-Prueba-{}-{}".format(self.id, self.clients_number,
+                                                                        self.server_file_name.split('.')[-1])
 
-                    for _ in range(math.ceil(size / BufferSize)):
+                start_time = time.time()
+
+                with open(File_path + self.client_file_name, 'wb') as f:
+
+                    for _ in tqdm(range(math.ceil(self.file_size / BufferSize))):
                         # read only 1024 bytes at a time
                         data = client_socket.recv(BufferSize)
+                        self.bytes_received += len(data)
+
+                        self.packages_received += 1
                         # print("Client{} Says: file chuck received from server: {}".format(self.id, data))
                         f.write(data)
 
                     f.close()
-                    print("Client{} Says: file transmission is complete")
+                    print("Client{} Says: file transmission is complete".format(self.id))
 
-                calculated_hash = self.hash_file(file_name)
+                calculated_hash = self.hash_file(self.client_file_name)
                 is_valid = calculated_hash == serverHash
+
+                self.running_time = time.time() - start_time
 
                 if is_valid:
 
                     self.send_to_server(client_socket, AKN_HASH,
                                         "File integrity is verified with calculated hash {}".format(calculated_hash))
                     client_socket.close()
+
+                    self.log_info_c()
                     break
                 else:
                     self.send_to_server(client_socket, ERROR,
                                         "File integrity could not be verified with calculated hash {}".format(
                                             calculated_hash))
+                    self.log_info_c()
                     break
+
 
             except Exception as err:
                 client_socket.close()
                 print("Client{} Says: Error during file transport with server: {}".format(self.id, str(err)))
-
+                self.success_connection = True
+                self.log_info_c()
                 break
+
+    @threadsafe_function
+    def log_info_c(self):
+        logging.info(
+            '_____________________________________________________________________________________________________')
+        d = {1: 'yes', 2: 'no'}
+        logging.info('Client{}: File name: {}'.format(self.id, self.server_file_name))
+        logging.info('Client{}: File size: {}'.format(self.id, self.file_size))
+        logging.info('Client{}: Client connection: ({}:{})'.format(self.id, self.ip, self.port))
+        logging.info('Client{}: Successful: {}'.format(self.id, d[self.success_connection]))
+        logging.info('Client{}: Running time: {} s'.format(self.id, self.running_time))
+        logging.info('Client{}: Bytes received: {} B'.format(self.id, self.bytes_received))
+        logging.info('Client{}: Packages received {}'.format(self.id, self.packages_received))
+
+
+class ThreadPool:
+
+    def __init__(self, clients_number):
+        # datetime object containing current date and time
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%d-%m %H:%M:%S")
+        dt_string2 = now.strftime("%Y-%d-%m-%H-%M-%S")
+
+        logging.basicConfig(filename="Logs/{}.log".format(dt_string2), level=logging.INFO)
+        logging.info(dt_string)
+
+        for n in range(clients_number):
+            c = ClientProtocol(n + 1, clients_number)
+            c.start()
 
 
 def main():
     cn = int(input("Indicate number of clients to connect to server \n"))
-    for n in range(cn):
-        c = ClientProtocol(n + 1, cn)
-        c.start()
+    ThreadPool(cn)
 
 
 if __name__ == "__main__":
-      main()
+    main()

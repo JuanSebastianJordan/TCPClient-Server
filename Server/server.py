@@ -18,11 +18,11 @@ host = '127.0.0.1'
 port = 1233
 BufferSize = 1024
 
-File_path = "data/media/"
+File_path = "data/Files/"
 Log_path = "data/Logs/"
 
-file_100MB = 'Test.mp4'
-file_250MB = 'Test.mp4'
+file_100MB = 'File1.mp4'
+file_250MB = 'File2.mp4'
 files_names = {1: file_100MB, 2: file_250MB}
 
 # open in binary
@@ -254,13 +254,13 @@ class ServerProtocol:
                 '_____________________________________________________________________________________________________')
             logging.info('Bytes sent:')
             for n in range(self.clients_number):
-                logging.info('Client{}: {} s'.format(n + 1, self.bytes_sent[n]))
+                logging.info('Client{}: {} B'.format(n + 1, self.bytes_sent[n]))
 
             logging.info(
                 '_____________________________________________________________________________________________________')
             logging.info('Packages sent:')
             for n in range(self.clients_number):
-                logging.info('Client{}: {} s'.format(n + 1, self.packages_sent[n]))
+                logging.info('Client{}: {}'.format(n + 1, self.packages_sent[n]))
 
     def run(self):
 
