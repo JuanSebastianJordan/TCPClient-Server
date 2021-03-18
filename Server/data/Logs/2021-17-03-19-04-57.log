@@ -1,0 +1,25 @@
+INFO:root:2021-17-03 19:04:57
+INFO:root:File name: Test.mp4; file size: 13804696 B
+INFO:root:Connection set to client1 (127.0.0.1:51340)
+INFO:root:Connection set to client2 (127.0.0.1:51342)
+INFO:root:Connection set to client3 (127.0.0.1:51341)
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Successful connections:
+INFO:root:Client1: yes
+INFO:root:Client2: yes
+INFO:root:Client3: yes
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Running times:
+INFO:root:Client1: 1.3710033893585205 s
+INFO:root:Client2: 1.4899916648864746 s
+INFO:root:Client3: 1.3970000743865967 s
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Bytes sent:
+INFO:root:Client1: 13804757.0 s
+INFO:root:Client2: 13804757.0 s
+INFO:root:Client3: 13804757.0 s
+INFO:root:_____________________________________________________________________________________________________
+INFO:root:Packages sent:
+INFO:root:Client1: 13486.0 s
+INFO:root:Client2: 13486.0 s
+INFO:root:Client3: 13486.0 s
