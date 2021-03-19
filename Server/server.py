@@ -262,7 +262,7 @@ class ServerProtocol:
 
     def run(self):
 
-        try:
+
             while True:
                 print('Listening at', self.server_socket.getsockname())
 
@@ -280,8 +280,6 @@ class ServerProtocol:
 
                 print('Thread Number: ' + str(self.thread_count))
 
-        except KeyboardInterrupt:
-            pass
 
 def main():
 
