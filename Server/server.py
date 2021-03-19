@@ -262,23 +262,20 @@ class ServerProtocol:
 
     def run(self):
 
+        while True:
+            print('Listening at', self.server_socket.getsockname())
 
-            while True:
-                print('Listening at', self.server_socket.getsockname())
+            Client, address = self.server_socket.accept()
+            self.thread_count += 1
 
-                Client, address = self.server_socket.accept()
-                self.thread_count += 1
+            print('Connected to: ' + address[0] + ':' + str(address[1]))
 
-                print('Connected to: ' + address[0] + ':' + str(address[1]))
+            logging.info('Connection set to client{} ({}:{})'.format(self.thread_count, address[0], str(address[1])))
 
-                logging.info('Connection set to client{} ({}:{})'.format(self.thread_count, address[0], str(address[1])))
+            if self.thread_count <= self.clients_number:
+                start_new_thread(self.send_file_to_client, (Client, self.thread_count))
 
-                if self.thread_count <= self.clients_number:
-                    start_new_thread(self.send_file_to_client, (Client, self.thread_count))
-
-
-
-                print('Thread Number: ' + str(self.thread_count))
+            print('Thread Number: ' + str(self.thread_count))
 
 
 def main():
