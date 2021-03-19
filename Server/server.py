@@ -12,10 +12,8 @@ import time
 from datetime import datetime
 
 
-
-
-host = '127.0.0.1'
-port = 1233
+host = socket.gethostbyaddr("54.162.149.119")[0]
+port = 60001
 BufferSize = 1024
 
 File_path = "data/Files/"
