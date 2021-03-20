@@ -130,13 +130,19 @@ class ServerProtocol:
 
                 self.send_file(connection, thread_id)
 
-                self.send_to_client(connection, AKN_COMPLETE,
-                                    "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
 
                 self.running_times[thread_id -1] = time.time() - start_time
 
+
+
+                self.send_to_client(connection, AKN_COMPLETE,
+                                    "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
+
+
+
                 reply = connection.recv(BUFFER_SIZE).decode('utf-8')
                 self.verify_reply(reply, AKN_HASH)
+
                 print("Server Says: File integrity verified by  client {}".format(thread_id))
 
                 connection.close()
