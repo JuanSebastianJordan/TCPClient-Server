@@ -206,7 +206,6 @@ class ServerProtocol:
                 self.packages_sent[thread_id-1] += 1
                 progress.update(len(chunk))
 
-            connection.send(str.encode(AKN_COMPLETE))
             print("Server Says: File transmission is complete to client {}".format(thread_id))
             file.close()
 

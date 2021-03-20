@@ -12,7 +12,7 @@ from datetime import datetime
 from threading import Thread
 
 # host = '54.162.149.119'
-host = 'localhost'
+host = '192.168.0.28'
 port = 60002
 # port = 60002
 BUFFER_SIZE = 1024
@@ -155,20 +155,17 @@ class ClientProtocol:
                                 unit_divisor=BUFFER_SIZE)
                 with open(File_path + self.client_file_name, "wb") as f:
 
-                    while True:
+                    bReceived=0
+                    while bReceived<self.file_size:
 
                         # read 1024 bytes from the socket (receive)
                         bytes_read = client_socket.recv(BUFFER_SIZE)
 
-                        complete = int.from_bytes(str.encode(AKN_COMPLETE), "big") == int.from_bytes(bytes_read, "big")
-
-                        if complete:
-                            break
 
                         # write to the file the bytes we just received
                         f.write(bytes_read)
 
-
+                        bReceived+=len(bytes_read)
                         self.bytes_received += len(bytes_read)
                         self.packages_received += 1
                         progress.update(len(bytes_read))
