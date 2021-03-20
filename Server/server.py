@@ -134,10 +134,9 @@ class ServerProtocol:
                 self.running_times[thread_id -1] = time.time() - start_time
 
 
-
                 # self.send_to_client(connection, AKN_COMPLETE,
                 #                     "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
-
+                #
 
 
                 reply = connection.recv(BUFFER_SIZE).decode('utf-8')
@@ -195,7 +194,7 @@ class ServerProtocol:
                 self.bytes_sent[thread_id-1] += int(b)
                 self.packages_sent[thread_id-1] += 1
 
-
+            b = connection.send()
             print("Server Says: File transmission is complete to client {}".format(thread_id))
             file.close()
 

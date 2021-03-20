@@ -15,7 +15,7 @@ from threading import Thread
 host = 'localhost'
 port = 60002
 # port = 60002
-BUFFER_SIZE = 256
+BUFFER_SIZE = 1024
 
 File_path = "ArchivosRecibidos/"
 
@@ -158,16 +158,26 @@ class ClientProtocol:
 
                 start_time = time.time()
 
-                with open(File_path + self.client_file_name, 'wb') as f:
+                progress = tqdm(range(self.file_size), f" Client{self.id} receiving {self.server_file_name}", unit="B",
+                                unit_scale=True,
+                                unit_divisor=BUFFER_SIZE)
+                with open(File_path + self.client_file_name, "wb") as f:
 
-                    for _ in tqdm(range(math.ceil(self.file_size / BUFFER_SIZE)), bar_format= f'Transfer to client{self.id}: ' + '{l_bar}{bar:10}{r_bar}{bar:-10b}'):
-                        # read only 1024 bytes at a time
-                        data = client_socket.recv(BUFFER_SIZE)
-                        self.bytes_received += len(data)
+                    bytes_read = b''
+                    complete = False
+                    while not complete:
+                        # read 1024 bytes from the socket (receive)
 
+                        # update the progress bar
+                        progress.update(len(bytes_read))
+                        # write to the file the bytes we just received
+                        f.write(bytes_read)
+                        bytes_read = client_socket.recv(BUFFER_SIZE)
+                        complete = bytes_read == b''
+
+                        self.bytes_received += len(bytes_read)
                         self.packages_received += 1
                         # print("Client{} Says: file chuck received from server: {}".format(self.id, data))
-                        f.write(data)
 
                     f.close()
 
