@@ -184,15 +184,27 @@ class ServerProtocol:
 
         return all_ready
 
+
     def send_file(self, connection, thread_id):
 
+        progress = tqdm(range(self.file_size), f'Transfer to client{thread_id}', unit="B",
+                        unit_scale=True,
+                        unit_divisor=BUFFER_SIZE)
+
+
         with open(File_path + self.file_name, 'rb') as file:
-            for _ in tqdm(range(math.ceil(self.file_size / BUFFER_SIZE)), bar_format= f'Transfer to client{thread_id}: ' + '{l_bar}{bar:10}{r_bar}{bar:-10b}'):
+
+            while True:
                 # read only 1024 bytes at a time
                 chunk = file.read(BUFFER_SIZE)
+
+                if chunk == b'':
+                    break
+
                 b = connection.send(chunk)
                 self.bytes_sent[thread_id-1] += int(b)
                 self.packages_sent[thread_id-1] += 1
+                progress.update(len(chunk))
 
             connection.send(str.encode(AKN_COMPLETE))
             print("Server Says: File transmission is complete to client {}".format(thread_id))
