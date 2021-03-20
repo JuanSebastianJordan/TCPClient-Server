@@ -13,7 +13,7 @@ from datetime import datetime
 
 
 host = socket.gethostbyaddr("54.162.149.119")[0]
-port = 60001
+port = 60002
 BufferSize = 1024
 
 File_path = "data/Files/"
@@ -135,7 +135,7 @@ class ServerProtocol:
                 print("Server Says: File integrity verified by  client {}".format(thread_id))
 
                 connection.close()
-                self.completed_connections[thread_id-1] = 1
+                self.completed_connections[thread_id - 1] = 1
                 self.success_connections[thread_id-1] = 1
                 self.log_info()
                 break
@@ -275,8 +275,9 @@ class ServerProtocol:
             if self.thread_count <= self.clients_number:
                 start_new_thread(self.send_file_to_client, (Client, self.thread_count))
 
-            print('Thread Number: ' + str(self.thread_count))
 
+
+            print('Thread Number: ' + str(self.thread_count))
 
 def main():
 

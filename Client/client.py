@@ -11,8 +11,8 @@ from tqdm import tqdm
 from datetime import datetime
 from threading import Thread
 
-host = '54.162.149.119'
-port = 60001
+host = '127.0.0.1'
+port = 1233
 BufferSize = 1024
 
 File_path = "ArchivosRecibidos/"
@@ -151,7 +151,7 @@ class ClientProtocol(Thread):
                 self.file_size = int(self.receive_from_server(client_socket))
                 print("Client{} Says: file size received from server: {}".format(self.id, self.file_size))
 
-                self.client_file_name = "Cliente{}-Prueba-{}.{}".format(self.id, self.clients_number,
+                self.client_file_name = "Cliente{}-Prueba-{}-{}".format(self.id, self.clients_number,
                                                                         self.server_file_name.split('.')[-1])
 
                 start_time = time.time()
