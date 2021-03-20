@@ -155,20 +155,28 @@ class ClientProtocol:
                                 unit_divisor=BUFFER_SIZE)
                 with open(File_path + self.client_file_name, "wb") as f:
 
-                    complete = False
-                    while not complete:
-                        # read 1024 bytes from the socket (receive)
+                    while True:
 
-                        # update the progress bar
-                        progress.update(len(bytes_read))
-                        # write to the file the bytes we just received
+                        # read 1024 bytes from the socket (receive)
                         bytes_read = client_socket.recv(BUFFER_SIZE)
+
+                        complete = int.from_bytes(str.encode(AKN_COMPLETE), "big") == int.from_bytes(bytes_read, "big")
+
+                        if complete:
+                            break
+
+                        # write to the file the bytes we just received
                         f.write(bytes_read)
+
 
                         self.bytes_received += len(bytes_read)
                         self.packages_received += 1
+                        progress.update(len(bytes_read))
                         # print("Client{} Says: file chuck received from server: {}".format(self.id, data))
-                        complete = int.from_bytes(str.encode(AKN_COMPLETE), "big") == int.from_bytes(bytes_read, "big")
+
+
+                        # update the progress bar
+
 
                     f.close()
 
