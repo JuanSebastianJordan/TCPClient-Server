@@ -11,9 +11,10 @@ from tqdm import tqdm
 from datetime import datetime
 from threading import Thread
 
-host = '54.162.149.119'
-port =  60002
-BufferSize = 1024
+# host = '54.162.149.119'
+host = 'localhost'
+port = 60002
+BUFFER_SIZE = 1024
 
 File_path = "ArchivosRecibidos/"
 
@@ -75,7 +76,7 @@ class ClientProtocol(Thread):
             chunk = 0
             while chunk != b'':
                 # read only 1024 bytes at a time
-                chunk = file.read(BufferSize)
+                chunk = file.read(BUFFER_SIZE)
                 h.update(chunk)
             file.close()
 
@@ -83,7 +84,7 @@ class ClientProtocol(Thread):
         return h.hexdigest()
 
     def receive_from_server(self, client_socket):
-        B = client_socket.recv(BufferSize)
+        B = client_socket.recv(BUFFER_SIZE)
         b = B.decode('utf-8')
         self.bytes_received += len(B)
         self.packages_received += 1
@@ -92,7 +93,7 @@ class ClientProtocol(Thread):
     def send_to_server(self, client_socket, segment, print_message):
         b = client_socket.send(str.encode(segment))
 
-        print(print_message)
+        print("\n", print_message)
 
     def verify_reply(self, received, expected):
         if not expected == received:
@@ -156,24 +157,35 @@ class ClientProtocol(Thread):
 
                 start_time = time.time()
 
-                with open(File_path + self.client_file_name, 'wb') as f:
+                progress = tqdm(range(self.file_size), f" Client{self.id} receiving {self.server_file_name}", unit="B",
+                                unit_scale=True,
+                                unit_divisor=BUFFER_SIZE)
+                with open(File_path + self.client_file_name, "wb") as f:
 
-                    for _ in tqdm(range(math.ceil(self.file_size / BufferSize))):
-                        # read only 1024 bytes at a time
-                        data = client_socket.recv(BufferSize)
-                        self.bytes_received += len(data)
+                    bytes_read = b''
+                    while not bytes_read == str.encode(AKN_COMPLETE):
+                        # read 1024 bytes from the socket (receive)
+                        progress.update(len(bytes_read))
+                        f.write(bytes_read)
+                        bytes_read = client_socket.recv(BUFFER_SIZE)
 
+                        self.bytes_received += len(bytes_read)
                         self.packages_received += 1
                         # print("Client{} Says: file chuck received from server: {}".format(self.id, data))
-                        f.write(data)
+
+                        # write to the file the bytes we just received
+                        # update the progress bar
+
+
 
                     f.close()
-                    print("Client{} Says: file transmission is complete".format(self.id))
+
+                print("Client{} Says: file transmission is complete".format(self.id))
+
+                self.running_time = time.time() - start_time
 
                 calculated_hash = self.hash_file(self.client_file_name)
                 is_valid = calculated_hash == serverHash
-
-                self.running_time = time.time() - start_time
 
                 if is_valid:
 
@@ -229,7 +241,7 @@ class ThreadPool:
 
 
 def main():
-    cn = int(input("Indicate number of clients to connect to server \n"))
+    cn = int(input("Indicate number of clients to connect to server: \n"))
     ThreadPool(cn)
 
 

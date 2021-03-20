@@ -10,11 +10,13 @@ import traceback
 from _thread import *
 import time
 from datetime import datetime
+from tqdm import tqdm
 
 
-host = socket.gethostbyaddr("54.162.149.119")[0]
+# host = socket.gethostbyaddr("54.162.149.119")[0]
+host  = 'localhost'
 port = 60002
-BufferSize = 1024
+BUFFER_SIZE = 1024
 
 File_path = "data/Files/"
 Log_path = "data/Logs/"
@@ -128,9 +130,12 @@ class ServerProtocol:
 
                 self.send_file(connection, thread_id)
 
+                self.send_to_client(connection, AKN_COMPLETE,
+                                    "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
+
                 self.running_times[thread_id -1] = time.time() - start_time
 
-                reply = connection.recv(BufferSize).decode('utf-8')
+                reply = connection.recv(BUFFER_SIZE).decode('utf-8')
                 self.verify_reply(reply, AKN_HASH)
                 print("Server Says: File integrity verified by  client {}".format(thread_id))
 
@@ -149,14 +154,14 @@ class ServerProtocol:
                 break
 
     def receive_from_client(self, connection):
-        return connection.recv(BufferSize).decode('utf-8')
+        return connection.recv(BUFFER_SIZE).decode('utf-8')
 
     def send_to_client(self, connection, segment, print_message, thread_id):
         b = connection.send(str.encode(segment))
         self.bytes_sent[thread_id-1] += int(b)
         self.packages_sent[thread_id-1] += 1
 
-        print(print_message)
+        print("\n", print_message)
 
     def verify_reply(self, received, expected):
         if not expected == received:
@@ -177,9 +182,9 @@ class ServerProtocol:
     def send_file(self, connection, thread_id):
 
         with open(File_path + self.file_name, 'rb') as file:
-            for _ in range(math.ceil(self.file_size / BufferSize)):
+            for _ in tqdm(range(math.ceil(self.file_size / BUFFER_SIZE)), bar_format= f'Transfer to client{thread_id}: ' + '{l_bar}{bar:10}{r_bar}{bar:-10b}'):
                 # read only 1024 bytes at a time
-                chunk = file.read(BufferSize)
+                chunk = file.read(BUFFER_SIZE)
                 b = connection.send(chunk)
                 self.bytes_sent[thread_id-1] += int(b)
                 self.packages_sent[thread_id-1] += 1
@@ -187,6 +192,7 @@ class ServerProtocol:
 
             print("Server Says: File transmission is complete to client {}".format(thread_id))
             file.close()
+
 
     def get_file_size(self):
         with open(File_path + self.file_name, 'rb') as file:
@@ -207,7 +213,7 @@ class ServerProtocol:
         chunk = 0
         while chunk != b'':
             # read only 1024 bytes at a time
-            chunk = file.read(BufferSize)
+            chunk = file.read(BUFFER_SIZE)
             h.update(chunk)
         file.close()
 
