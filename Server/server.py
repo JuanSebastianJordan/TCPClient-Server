@@ -97,8 +97,11 @@ class ServerProtocol:
 
                 self.send_to_client(connection, SYN, "Server Says: Hail from client {} received".format(thread_id), thread_id)
 
-                reply = self.receive_from_client(connection)
+                self.send_to_client(connection, f'{thread_id};{self.clients_number}',
+                                    "Server Says: Sent id to client {}".format(thread_id),
+                                    thread_id)
 
+                reply = self.receive_from_client(connection)
                 self.verify_reply(reply, AKN_READY)
 
                 self.update_ready_clients()
@@ -106,6 +109,7 @@ class ServerProtocol:
                 while not self.all_clients_ready(thread_id):
                     print('Server Says: client {} is put in wait for the rest of clients'.format(thread_id))
                     self.all_ready_monitor.wait()
+
 
                 self.send_to_client(connection, self.file_name, "Server Says: Sending file name ({}) to client "
                                                            "{}".format(self.file_name, thread_id), thread_id)
@@ -130,14 +134,10 @@ class ServerProtocol:
 
                 self.send_file(connection, thread_id)
 
+                reply = self.receive_from_client(connection)
+                self.verify_reply(reply, AKN_COMPLETE)
 
                 self.running_times[thread_id -1] = time.time() - start_time
-
-
-                # self.send_to_client(connection, AKN_COMPLETE,
-                #                     "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
-                #
-
 
                 reply = connection.recv(BUFFER_SIZE).decode('utf-8')
                 self.verify_reply(reply, AKN_HASH)

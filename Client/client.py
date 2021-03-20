@@ -20,7 +20,7 @@ BUFFER_SIZE = 1024
 File_path = "ArchivosRecibidos/"
 
 SYN = 'Hello'
-AKN = 'Ready'
+AKN_READY = 'Ready'
 AKN_NAME = 'Name'
 AKN_OK = 'Ok'
 AKN_HASH = 'HashOk'
@@ -47,10 +47,9 @@ def threadsafe_function(fn):
 
 class ClientProtocol:
 
-    def __init__(self, id, clients_number):
-        Thread.__init__(self)
-        self.id = id
-        self.clients_number = clients_number
+    def __init__(self):
+        self.id = 0
+        self.clients_number = 0
         self.server_file_name = ''
         self.client_file_name = ''
         self.file_size = 0
@@ -120,16 +119,25 @@ class ClientProtocol:
         while True:
 
             try:
-                self.send_to_server(client_socket, SYN, "Client{} Says: Hail sent to server".format(self.id))
+                self.send_to_server(client_socket, SYN, "Client Says: Hail sent to server")
 
                 reply = self.receive_from_server(client_socket)
-
                 self.verify_reply(reply, SYN)
-                print("Client{} Says: Hail back from server".format(self.id))
+                print("Client Says: Hail back from server")
 
-                self.send_to_server(client_socket, AKN,
-                                    "Client{} Says: communicating to server that client is ready for file transport".format(
-                                        self.id))
+                reply = self.receive_from_server(client_socket)
+                self.verify_reply_not_null(reply, 'client id')
+
+                self.id = int(reply.split(';')[0])
+                self.clients_number = int(reply.split(';')[1])
+
+                print("Client Says: id {} received from server".format(self.id))
+
+                self.send_to_server(client_socket, AKN_READY,
+                                    "Client Says: communicating to server that client is ready for file transport")
+
+
+
 
                 reply = self.receive_from_server(client_socket)
 
@@ -181,7 +189,8 @@ class ClientProtocol:
 
                     f.close()
 
-                print("Client{} Says: file transmission is complete".format(self.id))
+                self.send_to_server(client_socket, AKN_COMPLETE,
+                                    "Client{} Says: file transmission is complete".format(self.id))
 
                 self.running_time = time.time() - start_time
 
@@ -225,25 +234,10 @@ class ClientProtocol:
         logging.info('Client{}: Packages received {}'.format(self.id, self.packages_received))
 
 
-class ThreadPool:
-
-    def __init__(self, clients_number):
-        # datetime object containing current date and time
-        now = datetime.now()
-        dt_string = now.strftime("%Y-%d-%m %H:%M:%S")
-        dt_string2 = now.strftime("%Y-%d-%m-%H-%M-%S")
-
-        logging.basicConfig(filename="Logs/{}.log".format(dt_string2), level=logging.INFO)
-        logging.info(dt_string)
-
-        for n in range(clients_number):
-            c = ClientProtocol(n + 1, clients_number)
-            c.run()
-
 
 def main():
-    cn = int(input("Indicate number of clients to connect to server: \n"))
-    ThreadPool(cn)
+    c = ClientProtocol()
+    c.run()
 
 
 if __name__ == "__main__":
