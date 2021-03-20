@@ -12,7 +12,7 @@ from datetime import datetime
 from threading import Thread
 
 # host = '54.162.149.119'
-host = '192.168.0.28'
+host = '192.168.0.29'
 port = 60002
 # port = 60002
 BUFFER_SIZE = 1024
@@ -44,6 +44,14 @@ class ClientProtocol:
         self.log_info = ''
         self.port = ''
         self.ip = ''
+
+        # datetime object containing current date and time
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%d-%m %H:%M:%S")
+        dt_string2 = now.strftime("%Y-%d-%m-%H-%M-%S")
+
+        logging.basicConfig(filename="Logs/{}.log".format(dt_string2), level=logging.INFO)
+        logging.info(dt_string)
 
         print('Client thread started')
 
@@ -161,7 +169,6 @@ class ClientProtocol:
                         # read 1024 bytes from the socket (receive)
                         bytes_read = client_socket.recv(BUFFER_SIZE)
 
-
                         # write to the file the bytes we just received
                         f.write(bytes_read)
 
@@ -169,11 +176,6 @@ class ClientProtocol:
                         self.bytes_received += len(bytes_read)
                         self.packages_received += 1
                         progress.update(len(bytes_read))
-                        # print("Client{} Says: file chuck received from server: {}".format(self.id, data))
-
-
-                        # update the progress bar
-
 
                     f.close()
 
@@ -218,7 +220,6 @@ class ClientProtocol:
         logging.info('Client{}: Successful: {}'.format(self.id, d[self.success_connection]))
         logging.info('Client{}: Running time: {} s'.format(self.id, self.running_time))
         logging.info('Client{}: Bytes received: {} B'.format(self.id, self.bytes_received))
-        logging.info('Client{}: Packages received {}'.format(self.id, self.packages_received))
 
 
 

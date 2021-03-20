@@ -135,9 +135,10 @@ class ServerProtocol:
                 self.send_file(connection, thread_id)
 
                 reply = self.receive_from_client(connection)
-                self.verify_reply(reply, AKN_COMPLETE)
 
-                self.running_times[thread_id -1] = time.time() - start_time
+                self.running_times[thread_id - 1] = time.time() - start_time
+
+                self.verify_reply(reply, AKN_COMPLETE)
 
                 reply = connection.recv(BUFFER_SIZE).decode('utf-8')
                 self.verify_reply(reply, AKN_HASH)
@@ -275,12 +276,6 @@ class ServerProtocol:
             logging.info('Bytes sent:')
             for n in range(self.clients_number):
                 logging.info('Client{}: {} B'.format(n + 1, self.bytes_sent[n]))
-
-            logging.info(
-                '_____________________________________________________________________________________________________')
-            logging.info('Packages sent:')
-            for n in range(self.clients_number):
-                logging.info('Client{}: {}'.format(n + 1, self.packages_sent[n]))
 
     def run(self):
 
