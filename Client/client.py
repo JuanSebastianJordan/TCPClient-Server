@@ -174,11 +174,12 @@ class ClientProtocol:
 
                         bReceived+=len(bytes_read)
                         self.bytes_received += len(bytes_read)
-                        self.packages_received += 1
+
                         progress.update(len(bytes_read))
 
                     f.close()
 
+                self.packages_received = self.file_size/BUFFER_SIZE;
                 self.send_to_server(client_socket, AKN_COMPLETE,
                                     "Client{} Says: file transmission is complete".format(self.id))
 

@@ -204,9 +204,10 @@ class ServerProtocol:
 
                 b = connection.send(chunk)
                 self.bytes_sent[thread_id-1] += int(b)
-                self.packages_sent[thread_id-1] += 1
+
                 progress.update(len(chunk))
 
+            self.packages_sent[thread_id - 1] = self.file_size/BUFFER_SIZE
             print("Server Says: File transmission is complete to client {}".format(thread_id))
             file.close()
 
