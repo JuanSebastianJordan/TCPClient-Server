@@ -165,7 +165,7 @@ class ServerProtocol:
     def send_to_client(self, connection, segment, print_message, thread_id):
         b = connection.send(str.encode(segment))
         self.bytes_sent[thread_id-1] += int(b)
-        self.packages_sent[thread_id-1] += 1
+      #  self.packages_sent[thread_id-1] += 1
 
         print("\n", print_message)
 
@@ -276,6 +276,12 @@ class ServerProtocol:
             logging.info('Bytes sent:')
             for n in range(self.clients_number):
                 logging.info('Client{}: {} B'.format(n + 1, self.bytes_sent[n]))
+
+            logging.info(
+                '_____________________________________________________________________________________________________')
+            logging.info('Packages sent:')
+            for n in range(self.clients_number):
+                logging.info('Client{}: {}'.format(n + 1, self.packages_sent[n]))
 
     def run(self):
 

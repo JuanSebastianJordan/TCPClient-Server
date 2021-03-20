@@ -12,7 +12,7 @@ from datetime import datetime
 from threading import Thread
 
 # host = '54.162.149.119'
-host = '192.168.0.29'
+host = '192.168.0.30'
 port = 60002
 # port = 60002
 BUFFER_SIZE = 1024
@@ -79,7 +79,7 @@ class ClientProtocol:
         B = client_socket.recv(BUFFER_SIZE)
         b = B.decode('utf-8')
         self.bytes_received += len(B)
-        self.packages_received += 1
+      #  self.packages_received += 1
         return b
 
     def send_to_server(self, client_socket, segment, print_message):
@@ -220,6 +220,7 @@ class ClientProtocol:
         logging.info('Client{}: Successful: {}'.format(self.id, d[self.success_connection]))
         logging.info('Client{}: Running time: {} s'.format(self.id, self.running_time))
         logging.info('Client{}: Bytes received: {} B'.format(self.id, self.bytes_received))
+        logging.info('Client{}: Packages received {}'.format(self.id, self.packages_received))
 
 
 
