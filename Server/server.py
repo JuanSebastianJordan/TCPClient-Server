@@ -194,7 +194,7 @@ class ServerProtocol:
                 self.bytes_sent[thread_id-1] += int(b)
                 self.packages_sent[thread_id-1] += 1
 
-            b = connection.send()
+            connection.send(str.encode(AKN_COMPLETE))
             print("Server Says: File transmission is complete to client {}".format(thread_id))
             file.close()
 

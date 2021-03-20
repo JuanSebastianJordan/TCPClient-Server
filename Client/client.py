@@ -173,7 +173,7 @@ class ClientProtocol:
                         # write to the file the bytes we just received
                         f.write(bytes_read)
                         bytes_read = client_socket.recv(BUFFER_SIZE)
-                        complete = bytes_read == b''
+                        complete = int.from_bytes(str.encode(AKN_COMPLETE), "big") == int.from_bytes(bytes_read, "big")
 
                         self.bytes_received += len(bytes_read)
                         self.packages_received += 1
