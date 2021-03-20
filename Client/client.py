@@ -13,9 +13,9 @@ from threading import Thread
 
 # host = '54.162.149.119'
 host = 'localhost'
-# port = 50312
 port = 60002
-BUFFER_SIZE = 1024
+# port = 60002
+BUFFER_SIZE = 256
 
 File_path = "ArchivosRecibidos/"
 
@@ -45,7 +45,7 @@ def threadsafe_function(fn):
     return new
 
 
-class ClientProtocol(Thread):
+class ClientProtocol:
 
     def __init__(self, id, clients_number):
         Thread.__init__(self)
@@ -158,26 +158,16 @@ class ClientProtocol(Thread):
 
                 start_time = time.time()
 
-                progress = tqdm(range(self.file_size), f" Client{self.id} receiving {self.server_file_name}", unit="B",
-                                unit_scale=True,
-                                unit_divisor=BUFFER_SIZE)
-                with open(File_path + self.client_file_name, "wb") as f:
+                with open(File_path + self.client_file_name, 'wb') as f:
 
-                    bytes_read = b''
-                    complete = False
-                    while not complete:
-                        # read 1024 bytes from the socket (receive)
+                    for _ in tqdm(range(math.ceil(self.file_size / BUFFER_SIZE)), bar_format= f'Transfer to client{self.id}: ' + '{l_bar}{bar:10}{r_bar}{bar:-10b}'):
+                        # read only 1024 bytes at a time
+                        data = client_socket.recv(BUFFER_SIZE)
+                        self.bytes_received += len(data)
 
-                        # update the progress bar
-                        progress.update(len(bytes_read))
-                        # write to the file the bytes we just received
-                        f.write(bytes_read)
-                        bytes_read = client_socket.recv(BUFFER_SIZE)
-                        complete = int.from_bytes(bytes_read, "big") == int.from_bytes(str.encode(AKN_COMPLETE), "big")
-
-                        self.bytes_received += len(bytes_read)
                         self.packages_received += 1
                         # print("Client{} Says: file chuck received from server: {}".format(self.id, data))
+                        f.write(data)
 
                     f.close()
 
@@ -238,7 +228,7 @@ class ThreadPool:
 
         for n in range(clients_number):
             c = ClientProtocol(n + 1, clients_number)
-            c.start()
+            c.run()
 
 
 def main():

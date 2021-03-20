@@ -135,8 +135,8 @@ class ServerProtocol:
 
 
 
-                self.send_to_client(connection, AKN_COMPLETE,
-                                    "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
+                # self.send_to_client(connection, AKN_COMPLETE,
+                #                     "Server Says: Sending file completion transfer acknowledge to client {}".format(thread_id), thread_id)
 
 
 
