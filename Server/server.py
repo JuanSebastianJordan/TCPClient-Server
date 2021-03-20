@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 
 # host = socket.gethostbyaddr("54.162.149.119")[0]
-host  = 'localhost'
+host  = '0.0.0.0'
 port = 60002
 BUFFER_SIZE = 1024
 
