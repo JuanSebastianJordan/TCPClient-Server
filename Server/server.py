@@ -237,7 +237,7 @@ class ServerProtocol:
             logging.info(
                 '_____________________________________________________________________________________________________')
             logging.info('Successful connections:')
-            d = {1: 'yes', 2: 'no'}
+            d = {1: 'yes', 0: 'no'}
 
             for n in range(self.clients_number):
                 logging.info('Client{}: {}'.format(n + 1, d[self.success_connections[n]]))

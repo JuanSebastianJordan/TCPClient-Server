@@ -11,8 +11,8 @@ from tqdm import tqdm
 from datetime import datetime
 from threading import Thread
 
-host = '127.0.0.1'
-port = 1233
+host = '54.162.149.119'
+port =  60002
 BufferSize = 1024
 
 File_path = "ArchivosRecibidos/"
